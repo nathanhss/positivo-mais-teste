@@ -1,0 +1,38 @@
+version: "3.9"
+
+services:
+  backend:
+    image: node:20-alpine
+    container_name: backend-dev
+    working_dir: /usr/src/app
+    volumes:
+      - ./app/src:/usr/src/app
+      - node_modules:/usr/src/app/node_modules
+    ports:
+      - "3000:3000"
+    command: sh -c "npm install && npm run dev"
+    environment:
+      - MONGO_URL=mongodb://mongodb:27017/devdb
+    depends_on:
+      - mongodb
+    networks:
+      - dev-network
+
+  mongodb:
+    image: mongo:7
+    container_name: mongodb-dev
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - dev-network
+
+volumes:
+  mongo-data:
+  node_modules:
+
+networks:
+  dev-network:
+    driver: bridge
