@@ -13,8 +13,7 @@ class ClientController {
                 password,
             });
         } catch (error) {
-            logger.error(error);
-            throw error;
+            return error;
         }
     }
 
@@ -22,8 +21,7 @@ class ClientController {
         try {
             return await ClientService.getAll();
         } catch (error) {
-            logger.error(error);
-            throw error;
+            return error;
         }
     }
 
@@ -31,8 +29,7 @@ class ClientController {
         try {
             return await ClientService.getById(id);
         } catch (error) {
-            logger.error(error);
-            throw error;
+            return error;
         }
     }
 
@@ -40,8 +37,7 @@ class ClientController {
         try {
             return await ClientService.update(id, data);
         } catch (error) {
-            logger.error(error);
-            throw error;
+            return error;
         }
     }
 
@@ -49,8 +45,7 @@ class ClientController {
         try {
             return await ClientService.delete(id);
         } catch (error) {
-            logger.error(error);
-            throw error;
+            return error;
         }
     }
 
