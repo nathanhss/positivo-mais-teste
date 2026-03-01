@@ -22,6 +22,7 @@ export const createClientValidator = [
 
 export const getClientValidator = [
     param("id")
+        .isMongoId()
         .notEmpty()
         .isString()
         .withMessage("Id is required or not valid"),
@@ -29,6 +30,7 @@ export const getClientValidator = [
 
 export const updateClientValidator = [
     param("id")
+        .isMongoId()
         .notEmpty()
         .isString()
         .withMessage("Id is required or not valid"),
@@ -36,6 +38,7 @@ export const updateClientValidator = [
 
 export const deleteClientValidator = [
     param("id")
+        .isMongoId()
         .notEmpty()
         .isString()
         .withMessage("Id is required or not valid"),
