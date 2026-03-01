@@ -4,14 +4,7 @@ import logger from "../utils/logger.js";
 class ClientController {
     async create(data) {
         try {
-            const { name, email, document, username, password } = data;
-            return await ClientService.create({
-                name,
-                email,
-                document,
-                username,
-                password,
-            });
+            return await ClientService.create(data);
         } catch (error) {
             return error;
         }
