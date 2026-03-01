@@ -29,6 +29,14 @@ export const getClientValidator = [
 ];
 
 export const updateClientValidator = [
+    body("name").notEmpty().isString().withMessage("Name is required"),
+    body("email").isEmail().withMessage("Email is required or not valid"),
+    body("document")
+        .isString()
+        .withMessage("Document is required or not valid"),
+    body("username")
+        .isString()
+        .withMessage("Username is required or not valid"),
     param("id")
         .isMongoId()
         .notEmpty()
