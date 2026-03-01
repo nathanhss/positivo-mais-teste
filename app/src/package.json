@@ -1,13 +1,12 @@
 {
   "name": "positivo-mais-teste",
   "version": "1.0.0",
-  "description": "Projeto Node.js organizado",
-  "main": "dist/index.js",
+  "description": "Teste técnico para a Positivo Mais",
+  "main": "index.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "start": "node dist/index.js",
-    "dev": "node watch src/index.js",
+    "start": "node index.js",
+    "dev": "node --watch index.js",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
@@ -16,11 +15,21 @@
     "type-check": "tsc --noEmit"
   },
   "keywords": [],
-  "author": "",
+  "author": "Nathan H Silva",
   "license": "ISC",
   "devDependencies": {
+    "@babel/preset-env": "^7.29.0",
+    "babel-jest": "^30.2.0",
     "eslint": "^8.54.0",
-    "jest": "^29.7.0"
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
   },
-  "dependencies": {}
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "express": "^5.2.1",
+    "express-validator": "^7.3.1",
+    "mongoose": "^9.2.3",
+    "swagger-ui-express": "^5.0.0",
+    "winston": "^3.19.0"
+  }
 }
