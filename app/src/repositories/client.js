@@ -4,10 +4,15 @@ import logger from "../utils/logger.js";
 class ClientRepository {
     async create(client) {
         try {
-            logger.info("Creating client", client);
+            logger.info(
+                `Creating client ${client.username} with email ${client.email}`,
+            );
             return await Client.create(client);
         } catch (error) {
-            logger.error(error);
+            logger.error(
+                `Error creating client ${client.username} with email ${client.email}`,
+                error,
+            );
             throw error;
         }
     }
@@ -34,20 +39,20 @@ class ClientRepository {
 
     async update(id, client) {
         try {
-            logger.info("Updating client", id, client);
+            logger.info(`Updating client ${id}`);
             return await Client.findByIdAndUpdate(id, client, { new: true });
         } catch (error) {
-            logger.error(error);
+            logger.error(`Error updating client ${id}`, error);
             throw error;
         }
     }
 
     async delete(id) {
         try {
-            logger.info("Deleting client", id);
+            logger.info(`Deleting client ${id}`);
             return await Client.findByIdAndDelete(id);
         } catch (error) {
-            logger.error(error);
+            logger.error(`Error deleting client ${id}`, error);
             throw error;
         }
     }

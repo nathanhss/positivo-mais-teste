@@ -21,24 +21,27 @@ class Logger {
         });
     }
 
-    info(message) {
+    info(message, details = null) {
         this.logger.info({
             message,
             timestamp: new Date().toISOString(),
+            details,
         });
     }
 
-    error(message) {
+    error(message, details = null) {
         this.logger.error({
             message,
             timestamp: new Date().toISOString(),
+            details,
         });
     }
 
-    warn(message) {
+    warn(message, details = null) {
         this.logger.warn({
             message,
             timestamp: new Date().toISOString(),
+            details,
         });
     }
 }
