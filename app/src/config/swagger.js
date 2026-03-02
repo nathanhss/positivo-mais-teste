@@ -142,6 +142,56 @@ export const swaggerDocument = {
                     500: { description: "Erro interno do servidor" },
                 },
             },
+            patch: {
+                summary: "Atualizar cliente (parcial)",
+                tags: ["Clients"],
+                description:
+                    "Atualiza apenas os campos enviados no body. Todos os campos são opcionais.",
+                parameters: [
+                    {
+                        name: "id",
+                        in: "path",
+                        required: true,
+                        schema: { type: "string" },
+                        description: "MongoDB ObjectId do cliente",
+                    },
+                ],
+                requestBody: {
+                    content: {
+                        "application/json": {
+                            schema: { $ref: "#/components/schemas/ClientPatch" },
+                        },
+                    },
+                },
+                responses: {
+                    200: {
+                        description: "Cliente atualizado",
+                        content: {
+                            "application/json": {
+                                schema: {
+                                    type: "object",
+                                    properties: {
+                                        code: { type: "number", example: 200 },
+                                        success: { type: "boolean" },
+                                        message: { type: "string" },
+                                        data: { $ref: "#/components/schemas/Client" },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    404: { description: "Cliente não encontrado" },
+                    400: {
+                        description: "Dados inválidos (validação)",
+                        content: {
+                            "application/json": {
+                                schema: { $ref: "#/components/schemas/ValidationErrors" },
+                            },
+                        },
+                    },
+                    500: { description: "Erro interno do servidor" },
+                },
+            },
             delete: {
                 summary: "Remover cliente",
                 tags: ["Clients"],
@@ -192,6 +242,17 @@ export const swaggerDocument = {
                     username: { type: "string" },
                     password: { type: "string" },
                     status: { type: "string", enum: ["active", "inactive"] },
+                },
+            },
+            ClientPatch: {
+                type: "object",
+                description:
+                    "Todos os campos são opcionais. Apenas os enviados serão atualizados.",
+                properties: {
+                    name: { type: "string", description: "Nome completo" },
+                    email: { type: "string", format: "email" },
+                    document: { type: "string" },
+                    username: { type: "string" },
                 },
             },
             ValidationErrors: {
