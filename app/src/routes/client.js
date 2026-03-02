@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.get("/clients", async (req, res) => {
     const clients = await ClientController.getAll();
-    res.status(clients.status).json(clients);
+    res.status(clients.code).json(clients);
 });
 
 router.post("/clients", validate("create"), async (req, res) => {
@@ -18,6 +18,7 @@ router.post("/clients", validate("create"), async (req, res) => {
     }
     try {
         const { name, email, document, username, password } = matchedData(req);
+
         const client = await ClientController.create({
             name,
             email,
@@ -25,7 +26,8 @@ router.post("/clients", validate("create"), async (req, res) => {
             username,
             password,
         });
-        res.status(client.status).json(client);
+
+        res.status(client.code).json(client);
     } catch (error) {
         res.status(500).json({ message: error });
     }
@@ -39,7 +41,7 @@ router.get("/clients/:id", validate("get"), async (req, res) => {
     try {
         const id = req.params.id;
         const client = await ClientController.getById(id);
-        res.status(client.status).json(client);
+        res.status(client.code).json(client);
     } catch (error) {
         res.status(500).json({ message: error });
     }
@@ -54,7 +56,7 @@ router.put("/clients/:id", validate("update"), async (req, res) => {
         const id = req.params.id;
         const data = req.body;
         const client = await ClientController.update(id, data);
-        res.status(client.status).json(client);
+        res.status(client.code).json(client);
     } catch (error) {
         res.status(500).json({ message: error });
     }
@@ -75,7 +77,7 @@ router.delete("/clients/:id", validate("delete"), async (req, res) => {
     try {
         const id = req.params.id;
         const client = await ClientController.delete(id);
-        res.status(client.status).json(client);
+        res.status(client.code).json(client);
     } catch (error) {
         res.status(500).json({ message: error });
     }
