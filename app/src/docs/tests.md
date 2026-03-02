@@ -47,7 +47,7 @@ A pirâmide segue **repository → service → controller → routes**: cada ní
 | `create` | Chama `Client.create` com os dados e retorna o resultado; propaga erro quando `Client.create` falha. |
 | `getAll` | Chama `Client.find()` e retorna a lista; propaga erro em falha. |
 | `getById`| Chama `Client.findById(id)` e retorna o cliente; propaga erro em falha. |
-| `update` | Chama `Client.findByIdAndUpdate(id, data)` e retorna o atualizado; propaga erro em falha. |
+| `update` | Chama `Client.findByIdAndUpdate(id, data, { new: true })` e retorna o atualizado; propaga erro em falha. |
 | `delete` | Chama `Client.findByIdAndDelete(id)` e retorna o removido; propaga erro em falha. |
 
 Cada método tem pelo menos um teste de **sucesso** (retorno esperado) e um de **erro** (rejeição da promise).
@@ -56,7 +56,9 @@ Cada método tem pelo menos um teste de **sucesso** (retorno esperado) e um de *
 
 ## 2. Testes do Service (`client.service.test.js`)
 
-**Objetivo:** Garantir que o `ClientService` traduz o retorno do repository no formato da API (status, success, message, data) e trata sucesso, “não encontrado” e erro.
+**Objetivo:** Garantir que o `ClientService` traduz o retorno do repository no formato da API e trata sucesso, “não encontrado” e erro.
+
+**Formato da resposta:** O service usa `errorHandler(code, message, success, data)` e devolve sempre `{ code, message, success, data }` (propriedade **code**, não status).
 
 **Mocks:**
 
@@ -67,13 +69,13 @@ Cada método tem pelo menos um teste de **sucesso** (retorno esperado) e um de *
 
 | Método   | Cenários |
 |----------|----------|
-| `create` | Sucesso (201, data); repository retorna `null` (204, “Client not created”); repository lança erro (500, “Internal server error”). |
+| `create` | Sucesso (201, data); repository retorna `null` (404, “Client not created”); repository lança erro (500). No sucesso, verifica objectContaining e que password é string (hash). |
 | `getAll` | Sucesso (200, lista em `data`); repository lança erro (500). |
-| `getById`| Sucesso (200, client em `data`); não encontrado (204, “Client not found”); repository lança erro → service **relança** a exceção (comportamento diferente dos outros métodos). |
-| `update` | Sucesso (200, data); não encontrado (204); erro (500). |
-| `delete` | Sucesso (200, data); não encontrado (204); erro (500). |
+| `getById`| Sucesso (200, client em `data`); não encontrado (404, “Client not found”); repository lança erro → service retorna 500 (não relança). |
+| `update` | Sucesso (200, data); não encontrado (404); erro (500). |
+| `delete` | Sucesso (200, data); não encontrado (404, "Client not deleted"); erro (500). |
 
-Asserções verificam também que o repository foi chamado com os argumentos corretos (ex.: `toHaveBeenCalledWith(id)`, `toHaveBeenCalledWith(input)`).
+Asserções verificam também que o repository foi chamado com os argumentos corretos (ex.: `toHaveBeenCalledWith(id)`, `toHaveBeenCalledWith(id, payload)`).
 
 ---
 
@@ -89,8 +91,8 @@ Asserções verificam também que o repository foi chamado com os argumentos cor
 
 Para cada método (`create`, `getAll`, `getById`, `update`, `delete`):
 
-1. **Sucesso:** chama o method do service com os argumentos corretos (ex.: `create(data)` com `name`, `email`, `document`, `username`, `password`; `update(id, data)`; `delete(id)`) e retorna o mesmo objeto que o service.
-2. **Erro:** quando o service rejeita/lança, o controller relança a mesma exceção (ex.: `rejects.toThrow("Service error")`).
+1. **Sucesso:** chama o método do service com os argumentos corretos (ex.: `create(data)` com `name`, `email`, `document`, `username`, `password`; `update(id, data)`; `delete(id)`) e retorna o mesmo objeto que o service (objeto com `code`, `message`, `success`, `data`).
+2. **Erro:** quando o service rejeita/lança, o controller **relança** a exceção (`throw error`), então os testes esperam `rejects.toThrow("Service error")`.
 
 O controller é uma camada fina; os testes focam em delegação e repasse de erros.
 
@@ -100,11 +102,13 @@ O controller é uma camada fina; os testes focam em delegação e repasse de err
 
 **Objetivo:** Garantir que as rotas HTTP respondem com status e body corretos, que a validação (express-validator) é aplicada e que erros do controller viram 500.
 
+**Formato da resposta:** As rotas usam `res.status(result.code).json(result)`, ou seja, o status HTTP vem da propriedade **code** do objeto retornado pelo controller (que por sua vez vem do service via `errorHandler`).
+
 **Ferramenta:** **Supertest** — envia requisições HTTP para o app Express **sem** subir servidor (usa o objeto `app` diretamente).
 
 **Mocks:**
 
-- `../../controllers/client.js` — controller substituído; não chama service nem banco.
+- `../../controllers/client.js` — controller substituído; não chama service nem banco. Os mocks devolvem objetos com **code** (ex.: `{ code: 200, success: true, data: [] }`).
 
 **App de teste:** Usa `createApp()` de `config/express.js` e monta só as rotas de client, para ter uma instância limpa por execução de testes.
 
@@ -114,9 +118,9 @@ O controller é uma camada fina; os testes focam em delegação e repasse de err
 |-------------------|----------|
 | `GET /clients`    | Retorna 200 e o body devolvido pelo controller (lista). |
 | `POST /clients`  | Body válido → 201 e resposta do controller; body inválido (validação) → 400 e `errors`; controller lança → 500 e `message`. |
-| `GET /clients/:id`| Id válido → 200 e resposta do controller; id vazio/inexistente → 400 ou 404 conforme roteamento; controller lança → 500. |
-| `PUT /clients/:id`| Id e body válidos → 200 e resposta do controller; controller lança → 500. |
-| `DELETE /clients/:id` | Id válido → status e body do controller (ex.: 200 ou 204); id ausente → 404; controller lança → 500. |
+| `GET /clients/:id`| Id válido → 200 e resposta do controller; id não MongoId (ex.: `not-a-valid-mongo-id`) → 400 e `errors`, controller não chamado; controller lança → 500. |
+| `PUT /clients/:id`| Id e body válidos (name, email, document, username) → 200 e resposta do controller; controller lança → 500. |
+| `DELETE /clients/:id` | Id válido → status e body do controller (200 ou 404); controller retorna "not found" (code 404) → res.status 404; rota sem id (ex.: `/clients/`) → 404; controller lança → 500. |
 
 Os testes conferem `res.status`, `res.body` e, quando faz sentido, que o controller foi chamado com os argumentos esperados (ex.: body em POST, id em GET/PUT/DELETE).
 
