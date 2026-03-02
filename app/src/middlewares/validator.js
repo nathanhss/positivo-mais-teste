@@ -2,6 +2,7 @@ import {
     createClientValidator,
     deleteClientValidator,
     getClientValidator,
+    patchClientValidator,
     updateClientValidator,
 } from "../validators/clients.js";
 
@@ -15,5 +16,7 @@ export const validate = (method) => {
             return updateClientValidator;
         case "delete":
             return deleteClientValidator;
+        case "patch":
+            return patchClientValidator;
     }
 };

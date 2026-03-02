@@ -51,3 +51,15 @@ export const deleteClientValidator = [
         .isString()
         .withMessage("Id is required or not valid"),
 ];
+
+export const patchClientValidator = [
+    param("id")
+        .isMongoId()
+        .notEmpty()
+        .isString()
+        .withMessage("Id is required or not valid"),
+    body("name").isString().withMessage("Name is not valid").optional(),
+    body("email").isEmail().withMessage("Email is not valid").optional(),
+    body("document").isString().withMessage("Document is not valid").optional(),
+    body("username").isString().withMessage("Username is not valid").optional(),
+];
