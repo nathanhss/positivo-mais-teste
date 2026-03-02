@@ -23,7 +23,7 @@ export const swaggerDocument = {
                                 schema: {
                                     type: "object",
                                     properties: {
-                                        status: { type: "number", example: 200 },
+                                        code: { type: "number", example: 200 },
                                         success: { type: "boolean", example: true },
                                         message: { type: "string" },
                                         data: {
@@ -57,7 +57,7 @@ export const swaggerDocument = {
                                 schema: {
                                     type: "object",
                                     properties: {
-                                        status: { type: "number", example: 201 },
+                                        code: { type: "number", example: 201 },
                                         success: { type: "boolean" },
                                         message: { type: "string" },
                                         data: { $ref: "#/components/schemas/Client" },
@@ -83,7 +83,13 @@ export const swaggerDocument = {
                 summary: "Buscar cliente por ID",
                 tags: ["Clients"],
                 parameters: [
-                    { name: "id", in: "path", required: true, schema: { type: "string" } },
+                    {
+                        name: "id",
+                        in: "path",
+                        required: true,
+                        schema: { type: "string" },
+                        description: "MongoDB ObjectId do cliente",
+                    },
                 ],
                 responses: {
                     200: {
@@ -93,7 +99,7 @@ export const swaggerDocument = {
                                 schema: {
                                     type: "object",
                                     properties: {
-                                        status: { type: "number" },
+                                        code: { type: "number", example: 200 },
                                         success: { type: "boolean" },
                                         message: { type: "string" },
                                         data: { $ref: "#/components/schemas/Client" },
@@ -102,8 +108,8 @@ export const swaggerDocument = {
                             },
                         },
                     },
-                    204: { description: "Cliente não encontrado" },
-                    400: { description: "ID inválido" },
+                    404: { description: "Cliente não encontrado" },
+                    400: { description: "ID inválido (não é MongoId)" },
                     500: { description: "Erro interno do servidor" },
                 },
             },
@@ -111,7 +117,13 @@ export const swaggerDocument = {
                 summary: "Atualizar cliente",
                 tags: ["Clients"],
                 parameters: [
-                    { name: "id", in: "path", required: true, schema: { type: "string" } },
+                    {
+                        name: "id",
+                        in: "path",
+                        required: true,
+                        schema: { type: "string" },
+                        description: "MongoDB ObjectId do cliente",
+                    },
                 ],
                 requestBody: {
                     content: {
@@ -128,7 +140,7 @@ export const swaggerDocument = {
                                 schema: {
                                     type: "object",
                                     properties: {
-                                        status: { type: "number" },
+                                        code: { type: "number", example: 200 },
                                         success: { type: "boolean" },
                                         message: { type: "string" },
                                         data: { $ref: "#/components/schemas/Client" },
@@ -137,8 +149,15 @@ export const swaggerDocument = {
                             },
                         },
                     },
-                    204: { description: "Cliente não encontrado" },
-                    400: { description: "Dados inválidos" },
+                    404: { description: "Cliente não encontrado" },
+                    400: {
+                        description: "Dados inválidos (validação)",
+                        content: {
+                            "application/json": {
+                                schema: { $ref: "#/components/schemas/ValidationErrors" },
+                            },
+                        },
+                    },
                     500: { description: "Erro interno do servidor" },
                 },
             },
@@ -196,12 +215,18 @@ export const swaggerDocument = {
                 summary: "Remover cliente",
                 tags: ["Clients"],
                 parameters: [
-                    { name: "id", in: "path", required: true, schema: { type: "string" } },
+                    {
+                        name: "id",
+                        in: "path",
+                        required: true,
+                        schema: { type: "string" },
+                        description: "MongoDB ObjectId do cliente",
+                    },
                 ],
                 responses: {
                     200: { description: "Cliente removido" },
-                    204: { description: "Cliente não encontrado" },
-                    400: { description: "ID inválido" },
+                    404: { description: "Cliente não encontrado" },
+                    400: { description: "ID inválido (não é MongoId)" },
                     500: { description: "Erro interno do servidor" },
                 },
             },
