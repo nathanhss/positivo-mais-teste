@@ -6,7 +6,7 @@ class ClientController {
         try {
             return await ClientService.create(data);
         } catch (error) {
-            return error;
+            throw error;
         }
     }
 
@@ -14,7 +14,7 @@ class ClientController {
         try {
             return await ClientService.getAll();
         } catch (error) {
-            return error;
+            throw error;
         }
     }
 
@@ -22,7 +22,7 @@ class ClientController {
         try {
             return await ClientService.getById(id);
         } catch (error) {
-            return error;
+            throw error;
         }
     }
 
@@ -30,7 +30,7 @@ class ClientController {
         try {
             return await ClientService.update(id, data);
         } catch (error) {
-            return error;
+            throw error;
         }
     }
 
@@ -38,13 +38,17 @@ class ClientController {
         try {
             return await ClientService.delete(id);
         } catch (error) {
-            return error;
+            throw error;
         }
     }
 
-    // async patchStatus(id, data) {
-    //   return await ClientService.patchStatus(id, data);
-    // }
+    async patch(id, data) {
+        try {
+            return await ClientService.patch(id, data);
+        } catch (error) {
+            throw error;
+        }
+    }
 }
 
 export default new ClientController();
