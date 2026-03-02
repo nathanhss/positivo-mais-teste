@@ -56,6 +56,16 @@ class ClientRepository {
             throw error;
         }
     }
+
+    async patch(id, client) {
+        try {
+            logger.info(`Patching client ${id}`);
+            return await Client.findByIdAndUpdate(id, client, { new: true });
+        } catch (error) {
+            logger.error(`Error patching client ${id}`, error);
+            throw error;
+        }
+    }
 }
 
 export default new ClientRepository();

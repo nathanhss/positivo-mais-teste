@@ -62,12 +62,20 @@ router.put("/clients/:id", validate("update"), async (req, res) => {
     }
 });
 
-// router.patch("/clients/:id", async (req, res) => {
-//   const id = req.params.id;
-//   const data = req.body;
-//   const client = await ClientController.patch(id, data);
-//   res.status(200).json(client);
-// });
+router.patch("/clients/:id", validate("patch"), async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+    try {
+        const id = req.params.id;
+        const data = req.body;
+        const client = await ClientController.patch(id, data);
+        res.status(client.code).json(client);
+    } catch (error) {
+        res.status(500).json({ message: error });
+    }
+});
 
 router.delete("/clients/:id", validate("delete"), async (req, res) => {
     const errors = validationResult(req);

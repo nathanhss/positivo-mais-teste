@@ -4,20 +4,18 @@ import { errorHandler } from "../utils/errorHandler.js";
 import logger from "../utils/logger.js";
 
 class ClientService {
-    constructor() {
-        this.hash = createHash("sha256");
-    }
-
     async create(client) {
         try {
-            const password = this.hash.digest("hex", client.password, 10);
+            const password = createHash("sha256")
+                .update(client.password)
+                .digest("hex");
             const clientCreated = await ClientRepository.create({
                 ...client,
                 password,
             });
             if (!clientCreated) {
                 logger.warn("Client not created");
-                return errorHandler(404, "Client not created", false, null);
+                return errorHandler(404, "Client not created");
             }
 
             logger.info("Client created successfully", clientCreated);
@@ -29,7 +27,7 @@ class ClientService {
                 clientCreated,
             );
         } catch (error) {
-            return errorHandler(500, "Internal server error", false, null);
+            return errorHandler(500, "Internal server error");
         }
     }
 
@@ -46,7 +44,7 @@ class ClientService {
                 clients,
             );
         } catch (error) {
-            return errorHandler(500, "Internal server error", false, null);
+            return errorHandler(500, "Internal server error");
         }
     }
 
@@ -56,25 +54,27 @@ class ClientService {
 
             if (!client) {
                 logger.warn("Client not found");
-                return errorHandler(404, "Client not found", false, null);
+                return errorHandler(404, "Client not found");
             }
 
             return errorHandler(200, "Client found successfully", true, client);
         } catch (error) {
-            return errorHandler(500, "Internal server error", false, null);
+            return errorHandler(500, "Internal server error");
         }
     }
 
     async update(id, client) {
         try {
             if (client.password) {
-                client.password = this.hash.digest("hex", client.password, 10);
+                client.password = createHash("sha256")
+                    .update(client.password)
+                    .digest("hex");
             }
 
             const clientUpdated = await ClientRepository.update(id, client);
             if (!clientUpdated) {
                 logger.warn("Client not found");
-                return errorHandler(404, "Client not found", false, null);
+                return errorHandler(404, "Client not found");
             }
 
             return errorHandler(
@@ -84,7 +84,7 @@ class ClientService {
                 clientUpdated,
             );
         } catch (error) {
-            return errorHandler(500, "Internal server error", false, null);
+            return errorHandler(500, "Internal server error");
         }
     }
 
@@ -93,7 +93,7 @@ class ClientService {
             const clientDeleted = await ClientRepository.delete(id);
             if (!clientDeleted) {
                 logger.warn("Client not found");
-                return errorHandler(404, "Client not deleted", false, null);
+                return errorHandler(404, "Client not deleted");
             }
 
             return errorHandler(
@@ -103,7 +103,25 @@ class ClientService {
                 clientDeleted,
             );
         } catch (error) {
-            return errorHandler(500, "Internal server error", false, null);
+            return errorHandler(500, "Internal server error");
+        }
+    }
+
+    async patch(id, client) {
+        try {
+            const clientPatched = await ClientRepository.patch(id, client);
+            if (!clientPatched) {
+                logger.warn("Client not found");
+                return errorHandler(404, "Client not found");
+            }
+            return errorHandler(
+                200,
+                "Client patched successfully",
+                true,
+                clientPatched,
+            );
+        } catch (error) {
+            return errorHandler(500, "Internal server error");
         }
     }
 }
