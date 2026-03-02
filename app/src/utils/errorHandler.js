@@ -1,3 +1,3 @@
-export const errorHandler = (code, message, success = true, data = null) => {
+export const errorHandler = (code, message, success = false, data = null) => {
     return { code, message, success, data };
 };
