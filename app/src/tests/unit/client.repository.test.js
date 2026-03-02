@@ -77,7 +77,9 @@ describe("ClientRepository", () => {
 
             const result = await ClientRepository.update(id, payload);
 
-            expect(Client.findByIdAndUpdate).toHaveBeenCalledWith(id, payload);
+            expect(Client.findByIdAndUpdate).toHaveBeenCalledWith(id, payload, {
+                new: true,
+            });
             expect(result).toEqual(updated);
         });
 

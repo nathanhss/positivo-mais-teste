@@ -15,7 +15,7 @@ describe("Client routes", () => {
 
     describe("GET /clients", () => {
         it("should return 200 and list from controller", async () => {
-            const mockResponse = { status: 200, success: true, data: [{ _id: "1", name: "John" }] };
+            const mockResponse = { code: 200, success: true, data: [{ _id: "1", name: "John" }] };
             ClientController.getAll.mockResolvedValue(mockResponse);
 
             const res = await request(app).get("/clients");
@@ -36,7 +36,7 @@ describe("Client routes", () => {
         };
 
         it("should return 201 and created client when body is valid", async () => {
-            const mockResponse = { status: 201, success: true, message: "Client created successfully", data: {} };
+            const mockResponse = { code: 201, success: true, message: "Client created successfully", data: {} };
             ClientController.create.mockResolvedValue(mockResponse);
 
             const res = await request(app).post("/clients").send(validBody);
@@ -69,7 +69,7 @@ describe("Client routes", () => {
     describe("GET /clients/:id", () => {
         it("should return 200 and client when id is valid", async () => {
             const id = "507f1f77bcf86cd799439011";
-            const mockResponse = { status: 200, success: true, data: { _id: id, name: "John" } };
+            const mockResponse = { code: 200, success: true, data: { _id: id, name: "John" } };
             ClientController.getById.mockResolvedValue(mockResponse);
 
             const res = await request(app).get(`/clients/${id}`);
@@ -79,14 +79,13 @@ describe("Client routes", () => {
             expect(ClientController.getById).toHaveBeenCalledWith(id);
         });
 
-        it("should return 400 when id is empty (validation)", async () => {
-            const res = await request(app).get("/clients/");
+        it("should return 400 when id is not a valid MongoId (validation)", async () => {
+            const res = await request(app).get("/clients/not-a-valid-mongo-id");
 
-            expect([400, 404]).toContain(res.status);
-            if (res.status === 400) {
-                expect(res.body).toHaveProperty("errors");
-                expect(ClientController.getById).not.toHaveBeenCalled();
-            }
+            expect(res.status).toBe(400);
+            expect(res.body).toHaveProperty("errors");
+            expect(Array.isArray(res.body.errors)).toBe(true);
+            expect(ClientController.getById).not.toHaveBeenCalled();
         });
 
         it("should return 500 when controller throws", async () => {
@@ -101,10 +100,15 @@ describe("Client routes", () => {
 
     describe("PUT /clients/:id", () => {
         const id = "507f1f77bcf86cd799439011";
-        const body = { name: "Jane Doe", email: "jane@example.com" };
+        const body = {
+            name: "Jane Doe",
+            email: "jane@example.com",
+            document: "9876543210",
+            username: "jane.doe",
+        };
 
         it("should return 200 and updated client when valid", async () => {
-            const mockResponse = { status: 200, success: true, message: "Client updated successfully", data: {} };
+            const mockResponse = { code: 200, success: true, message: "Client updated successfully", data: {} };
             ClientController.update.mockResolvedValue(mockResponse);
 
             const res = await request(app).put(`/clients/${id}`).send(body);
@@ -128,7 +132,7 @@ describe("Client routes", () => {
         const id = "507f1f77bcf86cd799439011";
 
         it("should return status from controller and deleted client", async () => {
-            const mockResponse = { status: 200, success: true, message: "Client deleted successfully", data: {} };
+            const mockResponse = { code: 200, success: true, message: "Client deleted successfully", data: {} };
             ClientController.delete.mockResolvedValue(mockResponse);
 
             const res = await request(app).delete(`/clients/${id}`);
@@ -140,7 +144,7 @@ describe("Client routes", () => {
 
         it("should return 204 when controller returns not found", async () => {
             ClientController.delete.mockResolvedValue({
-                status: 204,
+                code: 404,
                 success: false,
                 message: "Client not found",
                 data: null,
@@ -148,7 +152,7 @@ describe("Client routes", () => {
 
             const res = await request(app).delete(`/clients/${id}`);
 
-            expect(res.status).toBe(204);
+            expect(res.status).toBe(404);
             expect(res.body.success).toBe(false);
         });
 

@@ -17,7 +17,7 @@ describe("ClientController", () => {
                 username: "john.doe",
                 password: "123456",
             };
-            const serviceResponse = { status: 201, success: true, message: "Client created successfully", data: {} };
+            const serviceResponse = { code: 201, success: true, message: "Client created successfully", data: {} };
             ClientService.create.mockResolvedValue(serviceResponse);
 
             const result = await ClientController.create(data);
@@ -41,7 +41,7 @@ describe("ClientController", () => {
 
     describe("getAll", () => {
         it("should call ClientService.getAll and return result", async () => {
-            const serviceResponse = { status: 200, success: true, data: [] };
+            const serviceResponse = { code: 200, success: true, data: [] };
             ClientService.getAll.mockResolvedValue(serviceResponse);
 
             const result = await ClientController.getAll();
@@ -60,7 +60,7 @@ describe("ClientController", () => {
     describe("getById", () => {
         it("should call ClientService.getById with id and return result", async () => {
             const id = "507f1f77bcf86cd799439011";
-            const serviceResponse = { status: 200, success: true, data: { _id: id, name: "John" } };
+            const serviceResponse = { code: 200, success: true, data: { _id: id, name: "John" } };
             ClientService.getById.mockResolvedValue(serviceResponse);
 
             const result = await ClientController.getById(id);
@@ -80,7 +80,7 @@ describe("ClientController", () => {
         it("should call ClientService.update with id and data and return result", async () => {
             const id = "507f1f77bcf86cd799439011";
             const data = { name: "Jane Doe", email: "jane@example.com" };
-            const serviceResponse = { status: 200, success: true, message: "Client updated successfully", data: {} };
+            const serviceResponse = { code: 200, success: true, message: "Client updated successfully", data: {} };
             ClientService.update.mockResolvedValue(serviceResponse);
 
             const result = await ClientController.update(id, data);
@@ -99,7 +99,7 @@ describe("ClientController", () => {
     describe("delete", () => {
         it("should call ClientService.delete with id and return result", async () => {
             const id = "507f1f77bcf86cd799439011";
-            const serviceResponse = { status: 200, success: true, message: "Client deleted successfully", data: {} };
+            const serviceResponse = { code: 200, success: true, message: "Client deleted successfully", data: {} };
             ClientService.delete.mockResolvedValue(serviceResponse);
 
             const result = await ClientController.delete(id);

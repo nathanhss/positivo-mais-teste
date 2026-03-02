@@ -30,12 +30,24 @@ describe("ClientService", () => {
                 updated_at: new Date(),
             };
 
+            delete createdClient.password;
+
             ClientRepository.create.mockResolvedValue(createdClient);
 
             const result = await ClientService.create(input);
 
-            expect(ClientRepository.create).toHaveBeenCalledWith(input);
-            expect(result.status).toBe(201);
+            expect(ClientRepository.create).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    name: input.name,
+                    email: input.email,
+                    document: input.document,
+                    username: input.username,
+                }),
+            );
+            expect(
+                typeof ClientRepository.create.mock.calls[0][0].password,
+            ).toBe("string");
+            expect(result.code).toBe(201);
             expect(result.success).toBe(true);
             expect(result.message).toBe("Client created successfully");
             expect(result.data).toBeDefined();
@@ -46,7 +58,7 @@ describe("ClientService", () => {
             expect(result.data._id).toBe(createdClient._id);
         });
 
-        it("should return 204 when repository does not create client", async () => {
+        it("should return 404 when repository does not create client", async () => {
             ClientRepository.create.mockResolvedValue(null);
 
             const result = await ClientService.create({
@@ -57,7 +69,7 @@ describe("ClientService", () => {
                 password: "123456",
             });
 
-            expect(result.status).toBe(204);
+            expect(result.code).toBe(404);
             expect(result.success).toBe(false);
             expect(result.message).toBe("Client not created");
             expect(result.data).toBeNull();
@@ -74,7 +86,7 @@ describe("ClientService", () => {
                 password: "123456",
             });
 
-            expect(result.status).toBe(500);
+            expect(result.code).toBe(500);
             expect(result.success).toBe(false);
             expect(result.message).toBe("Internal server error");
             expect(result.data).toBeNull();
@@ -91,7 +103,7 @@ describe("ClientService", () => {
             const result = await ClientService.getAll();
 
             expect(ClientRepository.getAll).toHaveBeenCalled();
-            expect(result.status).toBe(200);
+            expect(result.code).toBe(200);
             expect(result.success).toBe(true);
             expect(result.data).toEqual(clients);
         });
@@ -101,7 +113,7 @@ describe("ClientService", () => {
 
             const result = await ClientService.getAll();
 
-            expect(result.status).toBe(500);
+            expect(result.code).toBe(500);
             expect(result.success).toBe(false);
             expect(result.message).toBe("Internal server error");
             expect(result.data).toBeNull();
@@ -121,30 +133,32 @@ describe("ClientService", () => {
             const result = await ClientService.getById(id);
 
             expect(ClientRepository.getById).toHaveBeenCalledWith(id);
-            expect(result.status).toBe(200);
+            expect(result.code).toBe(200);
             expect(result.success).toBe(true);
             expect(result.message).toBe("Client found successfully");
             expect(result.data).toEqual(client);
         });
 
-        it("should return 204 when client is not found", async () => {
+        it("should return 404 when client is not found", async () => {
             ClientRepository.getById.mockResolvedValue(null);
 
             const result = await ClientService.getById("inexistent-id");
 
-            expect(result.status).toBe(204);
+            expect(result.code).toBe(404);
             expect(result.success).toBe(false);
             expect(result.message).toBe("Client not found");
             expect(result.data).toBeNull();
         });
 
-        it("should throw on repository error", async () => {
-            const error = new Error("DB error");
-            ClientRepository.getById.mockRejectedValue(error);
+        it("should return 500 on repository error", async () => {
+            ClientRepository.getById.mockRejectedValue(new Error("DB error"));
 
-            await expect(ClientService.getById("some-id")).rejects.toThrow(
-                "DB error",
-            );
+            const result = await ClientService.getById("some-id");
+
+            expect(result.code).toBe(500);
+            expect(result.success).toBe(false);
+            expect(result.message).toBe("Internal server error");
+            expect(result.data).toBeNull();
         });
     });
 
@@ -158,20 +172,20 @@ describe("ClientService", () => {
             const result = await ClientService.update(id, payload);
 
             expect(ClientRepository.update).toHaveBeenCalledWith(id, payload);
-            expect(result.status).toBe(200);
+            expect(result.code).toBe(200);
             expect(result.success).toBe(true);
             expect(result.message).toBe("Client updated successfully");
             expect(result.data).toEqual(updatedClient);
         });
 
-        it("should return 204 when client is not found", async () => {
+        it("should return 404 when client is not found", async () => {
             ClientRepository.update.mockResolvedValue(null);
 
             const result = await ClientService.update("inexistent-id", {
                 name: "Jane",
             });
 
-            expect(result.status).toBe(204);
+            expect(result.code).toBe(404);
             expect(result.success).toBe(false);
             expect(result.message).toBe("Client not found");
             expect(result.data).toBeNull();
@@ -184,7 +198,7 @@ describe("ClientService", () => {
                 name: "Jane",
             });
 
-            expect(result.status).toBe(500);
+            expect(result.code).toBe(500);
             expect(result.success).toBe(false);
             expect(result.message).toBe("Internal server error");
             expect(result.data).toBeNull();
@@ -200,20 +214,20 @@ describe("ClientService", () => {
             const result = await ClientService.delete(id);
 
             expect(ClientRepository.delete).toHaveBeenCalledWith(id);
-            expect(result.status).toBe(200);
+            expect(result.code).toBe(200);
             expect(result.success).toBe(true);
             expect(result.message).toBe("Client deleted successfully");
             expect(result.data).toEqual(deletedClient);
         });
 
-        it("should return 204 when client is not found", async () => {
+        it("should return 404 when client is not found", async () => {
             ClientRepository.delete.mockResolvedValue(null);
 
             const result = await ClientService.delete("inexistent-id");
 
-            expect(result.status).toBe(204);
+            expect(result.code).toBe(404);
             expect(result.success).toBe(false);
-            expect(result.message).toBe("Client not found");
+            expect(result.message).toBe("Client not deleted");
             expect(result.data).toBeNull();
         });
 
@@ -222,7 +236,54 @@ describe("ClientService", () => {
 
             const result = await ClientService.delete("some-id");
 
-            expect(result.status).toBe(500);
+            expect(result.code).toBe(500);
+            expect(result.success).toBe(false);
+            expect(result.message).toBe("Internal server error");
+            expect(result.data).toBeNull();
+        });
+    });
+
+    describe("patch", () => {
+        it("should return 200 and patched client when client is found", async () => {
+            const id = "507f1f77bcf86cd799439011";
+            const patchData = { email: "patched@example.com" };
+            const patchedClient = { _id: id, name: "John Doe", ...patchData };
+
+            ClientRepository.patch = jest.fn().mockResolvedValue(patchedClient);
+
+            const result = await ClientService.patch(id, patchData);
+
+            expect(ClientRepository.patch).toHaveBeenCalledWith(id, patchData);
+            expect(result.code).toBe(200);
+            expect(result.success).toBe(true);
+            expect(result.message).toBe("Client patched successfully");
+            expect(result.data).toEqual(patchedClient);
+        });
+
+        it("should return 404 when client to patch is not found", async () => {
+            ClientRepository.patch = jest.fn().mockResolvedValue(null);
+
+            const result = await ClientService.patch("inexistent-id", {});
+
+            expect(ClientRepository.patch).toHaveBeenCalledWith(
+                "inexistent-id",
+                {},
+            );
+            expect(result.code).toBe(404);
+            expect(result.success).toBe(false);
+            expect(result.message).toBe("Client not found");
+            expect(result.data).toBeNull();
+        });
+
+        it("should return 500 when repository.patch throws an error", async () => {
+            ClientRepository.patch = jest
+                .fn()
+                .mockRejectedValue(new Error("DB error"));
+
+            const result = await ClientService.patch("some-id", {});
+
+            expect(ClientRepository.patch).toHaveBeenCalledWith("some-id", {});
+            expect(result.code).toBe(500);
             expect(result.success).toBe(false);
             expect(result.message).toBe("Internal server error");
             expect(result.data).toBeNull();
